@@ -1,4 +1,4 @@
-package com.microservies_analyzer.backend;
+package com.analyzer.backend;
 
 import org.springframework.boot.SpringApplication;
 

@@ -1,4 +1,4 @@
-package com.microservies_analyzer.backend;
+package com.analyzer.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
