@@ -34,4 +34,4 @@ build/
 ./backend/!**/src/main/**/target/
 ./backend/!**/src/test/**/target/
 
-./backend/src/main/resources/application.yaml
+./backend/src/main/resources/application-local.yaml
