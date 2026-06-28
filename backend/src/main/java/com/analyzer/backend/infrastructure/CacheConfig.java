@@ -31,7 +31,9 @@ public class CacheConfig {
                 CacheConstants.SIMULATIONS_LIST, defaults.entryTtl(Duration.ofSeconds(20)),
                 CacheConstants.METRICS_SUMMARY, defaults.entryTtl(Duration.ofSeconds(60)),
                 CacheConstants.RECOMMENDATIONS, defaults.entryTtl(Duration.ofSeconds(30)),
-                CacheConstants.DASHBOARD_SUMMARY, defaults.entryTtl(Duration.ofSeconds(20))
+                CacheConstants.DASHBOARD_SUMMARY, defaults.entryTtl(Duration.ofSeconds(20)),
+                CacheConstants.LOG_SUMMARY,   defaults.entryTtl(Duration.ofSeconds(30)),
+                CacheConstants.LOGS_BY_SIM,   defaults.entryTtl(Duration.ofSeconds(20))
         );
 
         return RedisCacheManager.builder(cf)
