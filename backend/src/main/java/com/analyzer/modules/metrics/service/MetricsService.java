@@ -112,6 +112,7 @@ public class MetricsService {
                 .failedRequests(failedReqs)
                 .errorRate(MetricsCalculator.round(avgErrorRate, 6))
                 .healthStatus(healthStatus)
+                .healthScore(MetricsCalculator.round(healthScore, 1))
                 .build();
     }
 

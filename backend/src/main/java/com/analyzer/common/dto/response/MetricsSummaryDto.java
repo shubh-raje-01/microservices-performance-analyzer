@@ -29,6 +29,7 @@ public class MetricsSummaryDto {
 
     // Derived health signal
     private final String healthStatus;   // "HEALTHY" | "DEGRADED" | "CRITICAL"
+    private final Double healthScore;
 
     public static String deriveHealth(double errorRate, double p95LatencyMs) {
         if (errorRate > 0.10 || p95LatencyMs > 2000) return "CRITICAL";
