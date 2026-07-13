@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 
-from app.core.logging import get_logger
+from app.core.logging_config import get_logger
 from app.models.request import AnalysisRequest
 from app.models.response import AnomalyType
 

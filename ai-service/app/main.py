@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.core.config import get_settings
-from app.core.logging import configure_logging, get_logger
+from app.core.logging_config import configure_logging, get_logger
 from app.routers import analyze, health
 
 configure_logging()

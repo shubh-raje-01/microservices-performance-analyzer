@@ -3,7 +3,7 @@ from fastapi import APIRouter
 import httpx
 
 from app.core.config import get_settings
-from app.core.logging import get_logger
+from app.core.logging_config import get_logger
 from app.models.response import HealthResponse
 
 router = APIRouter(tags=["health"])

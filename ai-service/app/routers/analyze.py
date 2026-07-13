@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from app.core.logging import get_logger
+from app.core.logging_config import get_logger
 from app.models.request import AnalysisRequest
 from app.models.response import AnalysisResponse
 from app.services.analysis_orchestrator import AnalysisOrchestrator
