@@ -53,14 +53,25 @@ public class MetricSnapshot {
     private String unit;          // "ms", "rps", "percent", "count"
 
     // For latency snapshots — all percentiles stored on the same row
+    @Column(name = "avg_ms")
     private Double avgMs;
+
+    @Column(name = "p50_ms")
     private Double p50Ms;
+
+    @Column(name = "p95_ms")
     private Double p95Ms;
+
+    @Column(name = "p99_ms")
     private Double p99Ms;
+
+    @Column(name = "max_ms")
     private Double maxMs;
 
     // For error rate and availability snapshots
+    @Column(name = "total_requests")
     private Long totalRequests;
+    @Column(name = "failed_requests")
     private Long failedRequests;
 
     @Enumerated(EnumType.STRING)

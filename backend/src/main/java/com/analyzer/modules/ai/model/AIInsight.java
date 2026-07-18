@@ -60,11 +60,13 @@ public class AIInsight {
     @Column(name = "anomaly_type", length = 30)
     private AnomalyType anomalyType;
 
+    @Column(name = "anomaly_score")
     private Double anomalyScore;         // [0.0, 1.0] — higher = more anomalous
 
-    @Column(length = 20)
+    @Column(name = "predicted_trend", length = 20)
     private String predictedTrend;       // "IMPROVING" | "STABLE" | "DEGRADING"
 
+    @Column(name = "predicted_p95_ms")
     private Double predictedP95Ms;       // forecasted p95 for the next period
 
     @Convert(converter = JsonListConverter.class)

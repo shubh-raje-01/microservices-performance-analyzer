@@ -41,10 +41,19 @@ public class Simulation {
     @Builder.Default
     private SimulationStatus status = SimulationStatus.PENDING;
 
+    @Column(name = "avg_latency_ms")
     private Double avgLatencyMs;
+
+    @Column(name = "p95_latency_ms")
     private Double p95LatencyMs;
+
+    @Column(name = "p99_latency_ms")
     private Double p99LatencyMs;
+
+    @Column(name = "throughput_rps")
     private Double throughputRps;
+
+    @Column(name = "actual_error_rate")
     private Double actualErrorRate;
     private Long totalRequests;
     private Long failedRequests;

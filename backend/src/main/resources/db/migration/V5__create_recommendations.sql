@@ -9,9 +9,9 @@ CREATE TABLE recommendations (
                                  title VARCHAR(200) NOT NULL,
                                  description TEXT NOT NULL,
                                  action TEXT NOT NULL,
-                                 confidence_score DECIMAL(5, 4),
-                                 estimated_impact DECIMAL(5, 4),
-                                 composite_score  DECIMAL(8, 3)  NOT NULL DEFAULT 0.0,
+                                 confidence_score DOUBLE PRECISION,
+                                 estimated_impact DOUBLE PRECISION,
+                                 composite_score  DOUBLE PRECISION  NOT NULL DEFAULT 0.0,
                                  rank INT NOT NULL DEFAULT 0,
                                  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

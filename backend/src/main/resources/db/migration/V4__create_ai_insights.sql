@@ -8,9 +8,9 @@ CREATE TABLE ai_insights (
     -- FastAPI response fields
                              summary TEXT,
                              anomaly_type VARCHAR(30),
-                             anomaly_score DECIMAL(5, 4),
+                             anomaly_score DOUBLE PRECISION,
                              predicted_trend VARCHAR(20),
-                             predicted_p95_ms DECIMAL(12, 4),
+                             predicted_p95_ms DOUBLE PRECISION,
                              detected_patterns TEXT,           -- JSON array of strings
                              feature_importance TEXT,           -- JSON map of feature → score
                              raw_recommendations TEXT,           -- JSON array read by recommendation module

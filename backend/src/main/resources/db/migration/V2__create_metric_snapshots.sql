@@ -4,15 +4,15 @@ CREATE TABLE metric_snapshots (
                                       REFERENCES simulations(id) ON DELETE CASCADE,
                                   service_name VARCHAR(100) NOT NULL,
                                   metric_type VARCHAR(30) NOT NULL,
-                                  value DECIMAL(15, 6) NOT NULL,
+                                  value DOUBLE PRECISION NOT NULL,
                                   unit VARCHAR(20),
 
     -- Latency percentiles (populated for LATENCY rows only)
-                                  avg_ms DECIMAL(12, 4),
-                                  p50_ms DECIMAL(12, 4),
-                                  p95_ms DECIMAL(12, 4),
-                                  p99_ms DECIMAL(12, 4),
-                                  max_ms DECIMAL(12, 4),
+                                  avg_ms DOUBLE PRECISION,
+                                  p50_ms DOUBLE PRECISION,
+                                  p95_ms DOUBLE PRECISION,
+                                  p99_ms DOUBLE PRECISION,
+                                  max_ms DOUBLE PRECISION,
 
     -- Request counts (populated for ERROR_RATE and AVAILABILITY rows)
                                   total_requests BIGINT,
