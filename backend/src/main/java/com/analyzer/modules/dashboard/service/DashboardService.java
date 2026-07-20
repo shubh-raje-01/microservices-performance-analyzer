@@ -9,6 +9,7 @@ import com.analyzer.common.exceptions.AnalyzerException;
 import com.analyzer.modules.ai.repository.AIInsightRepository;
 import com.analyzer.modules.ai.service.AIService;
 import com.analyzer.modules.dashboard.dto.DashboardOverviewDto;
+import com.analyzer.modules.dashboard.dto.ObservabilityDashboardDto;
 import com.analyzer.modules.dashboard.dto.SystemHealthDto;
 import com.analyzer.modules.metrics.service.MetricsService;
 import com.analyzer.modules.recommendation.model.RecommendationPriority;
@@ -17,20 +18,31 @@ import com.analyzer.modules.recommendation.service.RecommendationService;
 import com.analyzer.modules.simulation.model.Simulation;
 import com.analyzer.modules.simulation.model.SimulationStatus;
 import com.analyzer.modules.simulation.repository.SimulationRepository;
+import com.analyzer.service_registry.model.Service;
+import com.analyzer.service_registry.model.ServiceHealthHistory;
+import com.analyzer.service_registry.model.ServiceMetrics;
+import com.analyzer.service_registry.model.ServiceStatus;
+import com.analyzer.service_registry.repository.ServiceHealthHistoryRepository;
+import com.analyzer.service_registry.repository.ServiceMetricsRepository;
+import com.analyzer.service_registry.repository.ServiceRepository;
+import com.analyzer.service_registry.service.ExternalMetricsCollectorService;
+import com.analyzer.service_registry.service.HealthMonitorService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class DashboardService {
@@ -41,6 +53,11 @@ public class DashboardService {
     private final AIInsightRepository aiInsightRepository;
     private final RecommendationService recommendationService;
     private final RecommendationRepository recommendationRepository;
+    private final ServiceRepository serviceRepository;
+    private final ServiceHealthHistoryRepository healthHistoryRepository;
+    private final ServiceMetricsRepository serviceMetricsRepository;
+    private final ExternalMetricsCollectorService metricsCollectorService;
+    private final HealthMonitorService healthMonitorService;
 
     // ── Full summary for one simulation
 
@@ -229,5 +246,128 @@ public class DashboardService {
             case "CRITICAL" -> 25.0;
             default         -> 0.0;
         };
+    }
+
+    // ── Observability Dashboard ───────────────────────────────────────
+
+    public ObservabilityDashboardDto getObservabilityDashboard(int historyHours) {
+        List<Service> enabledServices = serviceRepository.findAllEnabled();
+
+        // Status summary
+        long online = enabledServices.stream().filter(s -> s.getStatus() == ServiceStatus.ONLINE).count();
+        long offline = enabledServices.stream().filter(s -> s.getStatus() == ServiceStatus.OFFLINE).count();
+        long degraded = enabledServices.stream().filter(s -> s.getStatus() == ServiceStatus.DEGRADED).count();
+        long unknown = enabledServices.stream().filter(s -> s.getStatus() == ServiceStatus.UNKNOWN).count();
+        long disabled = serviceRepository.findAll().size() - enabledServices.size();
+
+        ObservabilityDashboardDto.ServiceStatusSummary statusSummary =
+                ObservabilityDashboardDto.ServiceStatusSummary.builder()
+                        .totalServices(enabledServices.size())
+                        .onlineCount(online)
+                        .offlineCount(offline)
+                        .degradedCount(degraded)
+                        .unknownCount(unknown)
+                        .disabledCount(disabled)
+                        .build();
+
+        // Latency summary across all services
+        java.time.Instant since = java.time.Instant.now().minusSeconds(historyHours * 3600L);
+        List<Object[]> slowestData = healthHistoryRepository.findSlowestServices(since);
+        List<Double> allLatencies = new ArrayList<>();
+        for (Object[] row : slowestData) {
+            if (row[1] != null) {
+                allLatencies.add(((Number) row[1]).doubleValue());
+            }
+        }
+
+        ObservabilityDashboardDto.LatencySummary latencySummary =
+                ObservabilityDashboardDto.LatencySummary.builder()
+                        .averageLatencyMs(allLatencies.isEmpty() ? 0 :
+                                allLatencies.stream().mapToDouble(d -> d).average().orElse(0))
+                        .p50LatencyMs(com.analyzer.common.utils.MetricsCalculator.p50(allLatencies))
+                        .p95LatencyMs(com.analyzer.common.utils.MetricsCalculator.p95(allLatencies))
+                        .p99LatencyMs(com.analyzer.common.utils.MetricsCalculator.p99(allLatencies))
+                        .build();
+
+        // Service details
+        List<ObservabilityDashboardDto.ServiceStatusDto> serviceDetails = enabledServices.stream()
+                .map(s -> {
+                    Double avgLatency = healthHistoryRepository.averageLatencyByService(s.getId(), since);
+                    Map<String, Double> latestMetrics = metricsCollectorService.getLatestMetrics(s.getId());
+                    return ObservabilityDashboardDto.ServiceStatusDto.builder()
+                            .serviceId(s.getId())
+                            .serviceName(s.getName())
+                            .status(s.getStatus())
+                            .enabled(s.isEnabled())
+                            .lastHeartbeat(s.getLastHeartbeat())
+                            .avgLatencyMs(avgLatency)
+                            .latestMetrics(latestMetrics)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // Recent failures
+        List<ServiceHealthHistory> recentHistory = healthHistoryRepository.findRecentAll(since);
+        List<ObservabilityDashboardDto.FailureEntry> recentFailures = recentHistory.stream()
+                .filter(h -> h.getStatus() == ServiceStatus.OFFLINE && h.getErrorMessage() != null)
+                .sorted((a, b) -> b.getCheckTime().compareTo(a.getCheckTime()))
+                .limit(20)
+                .map(h -> ObservabilityDashboardDto.FailureEntry.builder()
+                        .serviceId(h.getService().getId())
+                        .serviceName(h.getService().getName())
+                        .errorMessage(h.getErrorMessage())
+                        .occurredAt(h.getCheckTime())
+                        .build())
+                .collect(Collectors.toList());
+
+        // Health timeline per service
+        List<ObservabilityDashboardDto.HealthTimelineEntry> healthTimeline = enabledServices.stream()
+                .map(s -> {
+                    List<ServiceHealthHistory> history = healthHistoryRepository
+                            .findTop20ByServiceIdOrderByCheckTimeDesc(s.getId());
+                    List<ObservabilityDashboardDto.TimelinePoint> points = history.stream()
+                            .sorted((a, b) -> a.getCheckTime().compareTo(b.getCheckTime()))
+                            .map(h -> ObservabilityDashboardDto.TimelinePoint.builder()
+                                    .time(h.getCheckTime())
+                                    .status(h.getStatus())
+                                    .latencyMs(h.getLatencyMs())
+                                    .build())
+                            .collect(Collectors.toList());
+                    return ObservabilityDashboardDto.HealthTimelineEntry.builder()
+                            .serviceId(s.getId())
+                            .serviceName(s.getName())
+                            .points(points)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // Top slowest services
+        List<ObservabilityDashboardDto.TopSlowestService> topSlowest = slowestData.stream()
+                .limit(10)
+                .map(row -> {
+                    String serviceId = (String) row[0];
+                    double avgLat = row[1] != null ? ((Number) row[1]).doubleValue() : 0;
+                    Service service = serviceRepository.findById(serviceId).orElse(null);
+                    long checkCount = recentHistory.stream()
+                            .filter(h -> h.getService().getId().equals(serviceId))
+                            .count();
+                    return ObservabilityDashboardDto.TopSlowestService.builder()
+                            .serviceId(serviceId)
+                            .serviceName(service != null ? service.getName() : serviceId)
+                            .averageLatencyMs(avgLat)
+                            .checkCount(checkCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return ObservabilityDashboardDto.builder()
+                .statusSummary(statusSummary)
+                .latencySummary(latencySummary)
+                .services(serviceDetails)
+                .recentFailures(recentFailures)
+                .healthTimeline(healthTimeline)
+                .topSlowestServices(topSlowest)
+                .generatedAt(java.time.Instant.now())
+                .build();
     }
 }

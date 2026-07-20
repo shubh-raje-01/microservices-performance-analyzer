@@ -66,6 +66,22 @@ public class CacheConfig {
                 Map.entry(CacheConstants.DASHBOARD_SUMMARY,
                         defaults.entryTtl(Duration.ofSeconds(30))),
 
+                // ── Service Registry
+                Map.entry(CacheConstants.SERVICES_LIST,
+                        defaults.entryTtl(Duration.ofSeconds(20))),
+                Map.entry(CacheConstants.SERVICE_BY_ID,
+                        defaults.entryTtl(Duration.ofSeconds(30))),
+
+                // ── Health Monitoring
+                Map.entry(CacheConstants.HEALTH_STATUS,
+                        defaults.entryTtl(Duration.ofSeconds(15))),
+                Map.entry(CacheConstants.HEALTH_HISTORY,
+                        defaults.entryTtl(Duration.ofSeconds(30))),
+
+                // ── Monitoring Metrics
+                Map.entry(CacheConstants.MONITORING_METRICS,
+                        defaults.entryTtl(Duration.ofSeconds(30))),
+
                 // ── Shared
                 // Service name list grows slowly — long TTL
                 Map.entry(CacheConstants.SERVICE_NAMES,

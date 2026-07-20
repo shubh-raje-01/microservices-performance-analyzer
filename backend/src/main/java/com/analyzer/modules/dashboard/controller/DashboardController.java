@@ -3,6 +3,7 @@ package com.analyzer.modules.dashboard.controller;
 import com.analyzer.common.dto.ApiResponse;
 import com.analyzer.common.dto.response.DashboardSummaryDto;
 import com.analyzer.modules.dashboard.dto.DashboardOverviewDto;
+import com.analyzer.modules.dashboard.dto.ObservabilityDashboardDto;
 import com.analyzer.modules.dashboard.dto.SystemHealthDto;
 import com.analyzer.modules.dashboard.service.DashboardService;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,10 @@ public class DashboardController {
     public ResponseEntity<ApiResponse<?>> getSystemHealth() {
         SystemHealthDto health = service.getSystemHealth();
         return ResponseEntity.ok(ApiResponse.success(health));
+    }
+
+    public ResponseEntity<ApiResponse<?>> getObservabilityDashboard(int historyHours) {
+        ObservabilityDashboardDto dashboard = service.getObservabilityDashboard(historyHours);
+        return ResponseEntity.ok(ApiResponse.success(dashboard));
     }
 }

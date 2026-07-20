@@ -10,6 +10,11 @@ import com.analyzer.modules.logging.controller.LoggingController;
 import com.analyzer.modules.ai.controller.AIController;
 import com.analyzer.modules.recommendation.controller.RecommendationController;
 import com.analyzer.modules.dashboard.controller.DashboardController;
+import com.analyzer.service_registry.controller.ServiceRegistryController;
+import com.analyzer.service_registry.controller.HealthMonitorController;
+import com.analyzer.service_registry.controller.BenchmarkController;
+import com.analyzer.service_registry.dto.BenchmarkRequestDto;
+import com.analyzer.service_registry.dto.ServiceRequestDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +37,9 @@ public class GlobalController {
     private final AIController aiController;
     private final RecommendationController recommendationController;
     private final DashboardController dashboardController;
+    private final ServiceRegistryController serviceRegistryController;
+    private final HealthMonitorController healthMonitorController;
+    private final BenchmarkController benchmarkController;
 
     //  SIMULATION
 
@@ -210,7 +218,117 @@ public class GlobalController {
         return dashboardController.getSystemHealth();
     }
 
+    @GetMapping("/dashboard/observability")
+    public ResponseEntity<ApiResponse<?>> getObservabilityDashboard(
+            @RequestParam(defaultValue = "24") int hours) {
+        return dashboardController.getObservabilityDashboard(hours);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  SERVICE REGISTRY
+    // ════════════════════════════════════════════════════════════════════
+
+    @PostMapping("/services")
+    public ResponseEntity<ApiResponse<?>> registerService(
+            @Valid @RequestBody ServiceRequestDto dto) {
+        log.info("POST /services — name: {}", dto.getName());
+        return serviceRegistryController.create(dto);
+    }
+
+    @PutMapping("/services/{id}")
+    public ResponseEntity<ApiResponse<?>> updateService(
+            @PathVariable String id,
+            @Valid @RequestBody ServiceRequestDto dto) {
+        return serviceRegistryController.update(id, dto);
+    }
+
+    @DeleteMapping("/services/{id}")
+    public ResponseEntity<ApiResponse<?>> deleteService(@PathVariable String id) {
+        return serviceRegistryController.delete(id);
+    }
+
+    @GetMapping("/services/{id}")
+    public ResponseEntity<ApiResponse<?>> getService(@PathVariable String id) {
+        return serviceRegistryController.getById(id);
+    }
+
+    @GetMapping("/services")
+    public ResponseEntity<ApiResponse<?>> listServices(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String name) {
+        if (name != null && !name.isBlank()) {
+            return serviceRegistryController.search(name);
+        }
+        return serviceRegistryController.listPaged(page, size);
+    }
+
+    @PostMapping("/services/{id}/enable")
+    public ResponseEntity<ApiResponse<?>> enableService(@PathVariable String id) {
+        return serviceRegistryController.enable(id);
+    }
+
+    @PostMapping("/services/{id}/disable")
+    public ResponseEntity<ApiResponse<?>> disableService(@PathVariable String id) {
+        return serviceRegistryController.disable(id);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  HEALTH MONITORING
+    // ════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/health/status")
+    public ResponseEntity<ApiResponse<?>> getCurrentHealthStatus() {
+        return healthMonitorController.getCurrentStatus();
+    }
+
+    @GetMapping("/health/history")
+    public ResponseEntity<ApiResponse<?>> getAllHealthHistory(
+            @RequestParam(defaultValue = "1") int hours) {
+        return healthMonitorController.getAllHealthHistory(hours);
+    }
+
+    @GetMapping("/health/history/{serviceId}")
+    public ResponseEntity<ApiResponse<?>> getHealthHistory(
+            @PathVariable String serviceId,
+            @RequestParam(defaultValue = "24") int hours) {
+        return healthMonitorController.getHealthHistory(serviceId, hours);
+    }
+
+    @PostMapping("/health/check/{serviceId}")
+    public ResponseEntity<ApiResponse<?>> triggerHealthCheck(@PathVariable String serviceId) {
+        log.info("POST /health/check/{}", serviceId);
+        return healthMonitorController.triggerHealthCheck(serviceId);
+    }
+
+    @GetMapping("/health/latency")
+    public ResponseEntity<ApiResponse<?>> getAverageLatency(
+            @RequestParam String serviceId,
+            @RequestParam(defaultValue = "1") int hours) {
+        return healthMonitorController.getAverageLatency(serviceId, hours);
+    }
+
+    @GetMapping("/health/slowest")
+    public ResponseEntity<ApiResponse<?>> getTopSlowest(
+            @RequestParam(defaultValue = "1") int hours) {
+        return healthMonitorController.getTopSlowest(hours);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  BENCHMARK
+    // ════════════════════════════════════════════════════════════════════
+
+    @PostMapping("/services/{id}/benchmark")
+    public ResponseEntity<ApiResponse<?>> runBenchmark(
+            @PathVariable String id,
+            @Valid @RequestBody BenchmarkRequestDto request) {
+        log.info("POST /services/{}/benchmark — endpoint: {}", id, request.getEndpoint());
+        return benchmarkController.runBenchmark(id, request);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
     //  HEALTH
+    // ════════════════════════════════════════════════════════════════════
 
     @GetMapping("/health")
     public ResponseEntity<ApiResponse<String>> health() {

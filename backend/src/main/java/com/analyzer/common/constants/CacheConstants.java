@@ -25,6 +25,17 @@ public final class CacheConstants {
     // ── Dashboard module
     public static final String DASHBOARD_SUMMARY = "dashboard-summary";
 
+    // ── Service Registry
+    public static final String SERVICES_LIST = "services-list";
+    public static final String SERVICE_BY_ID = "service-by-id";
+
+    // ── Health Monitoring
+    public static final String HEALTH_STATUS = "health-status";
+    public static final String HEALTH_HISTORY = "health-history";
+
+    // ── Monitoring Metrics
+    public static final String MONITORING_METRICS = "monitoring-metrics";
+
     // ── Shared cross-module
     public static final String SERVICE_NAMES = "service-names";
 }
