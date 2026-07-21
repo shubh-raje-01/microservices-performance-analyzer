@@ -193,3 +193,63 @@ export type SystemHealthDto = {
   degradedServiceNames: string[]
   averageHealthScore: number
 }
+
+// ─── Distributed Tracing ─────────────────────────────────────────
+
+export type TraceSpanDto = {
+  traceId: string
+  spanId: string
+  parentSpanId: string | null
+  serviceName: string
+  operationName: string
+  spanKind: string
+  startTime: string
+  durationMs: number
+  statusCode: string
+  statusMessage: string | null
+  attributes: Record<string, unknown> | null
+}
+
+export type TraceSummaryDto = {
+  traceId: string
+  rootOperation: string
+  serviceName: string
+  startTime: string
+  durationMs: number
+  spanCount: number
+  serviceNames: string[]
+  status: string
+}
+
+export type TraceDetailDto = {
+  traceId: string
+  rootOperation: string
+  rootService: string
+  startTime: string
+  durationMs: number
+  spanCount: number
+  serviceNames: string[]
+  status: string
+  spans: TraceSpanDto[]
+}
+
+export type TraceDependencyNode = {
+  serviceName: string
+  operationCount: number
+  avgDurationMs: number
+  status: string
+}
+
+export type TraceDependencyEdge = {
+  source: string
+  target: string
+  callCount: number
+  avgDurationMs: number
+  operationName: string
+}
+
+export type TraceDependencyGraphDto = {
+  traceId: string
+  nodes: TraceDependencyNode[]
+  edges: TraceDependencyEdge[]
+}

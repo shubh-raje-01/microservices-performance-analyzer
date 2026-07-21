@@ -7,6 +7,8 @@ import MetricsView from './pages/MetricsView'
 import LogViewer from './pages/LogViewer'
 import AIInsights from './pages/AIInsights'
 import Recommendations from './pages/Recommendations'
+import Traces from './pages/Traces'
+import TraceDetail from './pages/TraceDetail'
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/logs/:id" element={<LogViewer />} />
           <Route path="/insights/:id" element={<AIInsights />} />
           <Route path="/recommendations/:id" element={<Recommendations />} />
+          <Route path="/traces" element={<Traces />} />
+          <Route path="/traces/:traceId" element={<TraceDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

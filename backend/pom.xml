@@ -189,6 +189,48 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!--  DISTRIBUTED TRACING — OpenTelemetry -->
+
+		<!--
+		    Micrometer Tracing Bridge for OpenTelemetry.
+		    Bridges Spring MVC / WebClient / @Observed observations
+		    to OTel spans automatically — no manual instrumentation needed.
+		-->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-tracing-bridge-otel</artifactId>
+		</dependency>
+
+		<!--
+		    OpenTelemetry SDK core.
+		    Provides TracerProvider, Tracer, SpanExporter SPI.
+		    Required by the Micrometer bridge to create real OTel spans.
+		-->
+		<dependency>
+			<groupId>io.opentelemetry</groupId>
+			<artifactId>opentelemetry-sdk</artifactId>
+		</dependency>
+
+		<!--
+		    OTel SDK Autoconfigure extension.
+		    Reads OTEL_RESOURCE_ATTRIBUTES, OTEL_SERVICE_NAME, etc.
+		    and auto-configures TracerProvider without manual code.
+		-->
+		<dependency>
+			<groupId>io.opentelemetry</groupId>
+			<artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+		</dependency>
+
+		<!--
+		    OTLP/gRPC span exporter.
+		    Sends finished spans to Jaeger (port 4317) or OTel Collector.
+		    Jaeger 1.35+ natively accepts OTLP — no proprietary exporter needed.
+		-->
+		<dependency>
+			<groupId>io.opentelemetry</groupId>
+			<artifactId>opentelemetry-exporter-otlp</artifactId>
+		</dependency>
+
 		<!-- SERIALISATION - Java 8+ time types (Instant, LocalDate) in JSON -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>

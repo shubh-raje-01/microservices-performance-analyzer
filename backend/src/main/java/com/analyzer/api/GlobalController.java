@@ -15,6 +15,9 @@ import com.analyzer.service_registry.controller.HealthMonitorController;
 import com.analyzer.service_registry.controller.BenchmarkController;
 import com.analyzer.service_registry.dto.BenchmarkRequestDto;
 import com.analyzer.service_registry.dto.ServiceRequestDto;
+import com.analyzer.modules.tracing.controller.TraceController;
+import com.analyzer.modules.tracing.dto.TraceDependencyGraphDto;
+import com.analyzer.modules.tracing.dto.TraceDetailDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +43,7 @@ public class GlobalController {
     private final ServiceRegistryController serviceRegistryController;
     private final HealthMonitorController healthMonitorController;
     private final BenchmarkController benchmarkController;
+    private final TraceController traceController;
 
     //  SIMULATION
 
@@ -324,6 +328,30 @@ public class GlobalController {
             @Valid @RequestBody BenchmarkRequestDto request) {
         log.info("POST /services/{}/benchmark — endpoint: {}", id, request.getEndpoint());
         return benchmarkController.runBenchmark(id, request);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  DISTRIBUTED TRACING
+    // ════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/traces")
+    public ResponseEntity<ApiResponse<?>> listTraces(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String serviceName,
+            @RequestParam(defaultValue = "24") int hoursBack) {
+        return traceController.listTraces(page, size, serviceName, hoursBack);
+    }
+
+    @GetMapping("/traces/{traceId}")
+    public ResponseEntity<ApiResponse<TraceDetailDto>> getTrace(@PathVariable String traceId) {
+        return traceController.getTrace(traceId);
+    }
+
+    @GetMapping("/traces/{traceId}/graph")
+    public ResponseEntity<ApiResponse<TraceDependencyGraphDto>> getTraceGraph(
+            @PathVariable String traceId) {
+        return traceController.getDependencyGraph(traceId);
     }
 
     // ════════════════════════════════════════════════════════════════════

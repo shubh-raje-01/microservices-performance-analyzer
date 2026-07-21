@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { BarChart3, Rocket, History } from 'lucide-react'
+import { BarChart3, Rocket, History, Network } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useAnalyzerStore } from '../../store'
 
@@ -7,6 +7,7 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { to: '/simulate', label: 'Run Simulation', icon: Rocket },
   { to: '/history', label: 'History', icon: History },
+  { to: '/traces', label: 'Tracing', icon: Network },
 ]
 
 export function Sidebar() {
