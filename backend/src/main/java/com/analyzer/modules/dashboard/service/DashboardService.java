@@ -20,7 +20,6 @@ import com.analyzer.modules.simulation.model.SimulationStatus;
 import com.analyzer.modules.simulation.repository.SimulationRepository;
 import com.analyzer.service_registry.model.Service;
 import com.analyzer.service_registry.model.ServiceHealthHistory;
-import com.analyzer.service_registry.model.ServiceMetrics;
 import com.analyzer.service_registry.model.ServiceStatus;
 import com.analyzer.service_registry.repository.ServiceHealthHistoryRepository;
 import com.analyzer.service_registry.repository.ServiceMetricsRepository;
@@ -36,7 +35,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

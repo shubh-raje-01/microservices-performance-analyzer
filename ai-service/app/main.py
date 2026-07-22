@@ -8,7 +8,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.core.config import get_settings
 from app.core.logging_config import configure_logging, get_logger
-from app.routers import analyze, health
+from app.routers import analyze, health, rca
 
 configure_logging()
 logger = get_logger(__name__)
@@ -47,6 +47,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(analyze.router)
+    app.include_router(rca.router)
 
     Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 

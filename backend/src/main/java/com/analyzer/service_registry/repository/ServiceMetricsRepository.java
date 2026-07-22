@@ -63,5 +63,79 @@ public interface ServiceMetricsRepository extends JpaRepository<ServiceMetrics, 
     """)
     List<Object[]> findAllServiceMetricAverages(@Param("since") Instant since);
 
+    @Query("""
+        SELECT m FROM ServiceMetrics m
+        WHERE m.service.id = :serviceId
+          AND m.metricType = :metricType
+          AND m.timestamp >= :since
+        ORDER BY m.timestamp DESC
+    """)
+    List<ServiceMetrics> findByMetricType(
+            @Param("serviceId") String serviceId,
+            @Param("metricType") String metricType,
+            @Param("since") Instant since
+    );
+
+    @Query("""
+        SELECT m FROM ServiceMetrics m
+        WHERE m.service.id = :serviceId
+          AND m.metricName IN :metricNames
+          AND m.timestamp >= :since
+        ORDER BY m.timestamp DESC
+    """)
+    List<ServiceMetrics> findByMetricNames(
+            @Param("serviceId") String serviceId,
+            @Param("metricNames") List<String> metricNames,
+            @Param("since") Instant since
+    );
+
+    @Query("""
+        SELECT m.metricName, AVG(m.metricValue), MIN(m.metricValue),
+               MAX(m.metricValue), COUNT(m)
+        FROM ServiceMetrics m
+        WHERE m.service.id = :serviceId
+          AND m.metricType = :metricType
+          AND m.timestamp >= :since
+        GROUP BY m.metricName
+    """)
+    List<Object[]> findMetricTypeAggregates(
+            @Param("serviceId") String serviceId,
+            @Param("metricType") String metricType,
+            @Param("since") Instant since
+    );
+
+    @Query("""
+        SELECT m FROM ServiceMetrics m
+        WHERE m.service.id = :serviceId
+          AND m.timestamp >= :since
+        ORDER BY m.timestamp ASC
+    """)
+    List<ServiceMetrics> findTimeSeriesByService(
+            @Param("serviceId") String serviceId,
+            @Param("since") Instant since
+    );
+
+    @Query("""
+        SELECT DISTINCT m.metricName FROM ServiceMetrics m
+        WHERE m.service.id = :serviceId
+          AND m.timestamp >= :since
+        ORDER BY m.metricName
+    """)
+    List<String> findDistinctMetricNames(
+            @Param("serviceId") String serviceId,
+            @Param("since") Instant since
+    );
+
+    @Query("""
+        SELECT m FROM ServiceMetrics m
+        WHERE m.service.id = :serviceId
+          AND m.timestamp >= :since
+        ORDER BY m.timestamp DESC
+    """)
+    List<ServiceMetrics> findLatestByService(
+            @Param("serviceId") String serviceId,
+            @Param("since") Instant since
+    );
+
     void deleteByTimestampBefore(Instant cutoff);
 }

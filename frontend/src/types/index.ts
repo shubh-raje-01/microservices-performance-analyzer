@@ -253,3 +253,139 @@ export type TraceDependencyGraphDto = {
   nodes: TraceDependencyNode[]
   edges: TraceDependencyEdge[]
 }
+
+// ─── Grafana Monitoring ───────────────────────────────────────────
+
+export type GrafanaServiceHealthEntry = {
+  serviceId: string
+  serviceName: string
+  status: string
+  latencyMs: number | null
+  lastHeartbeat: string | null
+}
+
+export type GrafanaServiceHealthWidget = {
+  totalServices: number
+  onlineCount: number
+  degradedCount: number
+  offlineCount: number
+  services: GrafanaServiceHealthEntry[]
+}
+
+export type GrafanaMetricTrendPoint = {
+  time: string
+  value: number
+}
+
+export type GrafanaServiceCpuEntry = {
+  serviceId: string
+  serviceName: string
+  usagePercent: number
+}
+
+export type GrafanaCpuWidget = {
+  averageUsagePercent: number
+  maxUsagePercent: number
+  trend: GrafanaMetricTrendPoint[]
+  perService: GrafanaServiceCpuEntry[]
+}
+
+export type GrafanaServiceMemoryEntry = {
+  serviceId: string
+  serviceName: string
+  usagePercent: number
+  usedBytes: number
+  maxBytes: number
+}
+
+export type GrafanaMemoryWidget = {
+  averageUsagePercent: number
+  maxUsagePercent: number
+  totalUsedBytes: number
+  totalMaxBytes: number
+  trend: GrafanaMetricTrendPoint[]
+  perService: GrafanaServiceMemoryEntry[]
+}
+
+export type GrafanaLatencyWidget = {
+  averageMs: number
+  p50Ms: number
+  p95Ms: number
+  p99Ms: number
+  maxMs: number
+  trend: GrafanaMetricTrendPoint[]
+}
+
+export type GrafanaRequestRateWidget = {
+  totalRps: number
+  totalRequests: number
+  successfulRequests: number
+  trend: GrafanaMetricTrendPoint[]
+}
+
+export type GrafanaErrorRateWidget = {
+  errorRatePercent: number
+  totalErrors: number
+  totalRequests: number
+  trend: GrafanaMetricTrendPoint[]
+}
+
+export type GrafanaTopSlowestEntry = {
+  serviceId: string
+  serviceName: string
+  averageLatencyMs: number
+  checkCount: number
+}
+
+export type GrafanaTopSlowestWidget = {
+  services: GrafanaTopSlowestEntry[]
+}
+
+export type GrafanaFailureEntry = {
+  serviceId: string
+  serviceName: string
+  errorMessage: string
+  occurredAt: string
+}
+
+export type GrafanaRecentFailuresWidget = {
+  failures: GrafanaFailureEntry[]
+  totalFailures: number
+}
+
+export type GrafanaGraphNode = {
+  serviceName: string
+  status: string
+  avgLatencyMs: number
+  spanCount: number
+}
+
+export type GrafanaGraphEdge = {
+  source: string
+  target: string
+  callCount: number
+  avgDurationMs: number
+}
+
+export type GrafanaDependencyGraphWidget = {
+  nodes: GrafanaGraphNode[]
+  edges: GrafanaGraphEdge[]
+}
+
+export type GrafanaWidgetData = {
+  serviceHealth: GrafanaServiceHealthWidget | null
+  cpu: GrafanaCpuWidget | null
+  memory: GrafanaMemoryWidget | null
+  latency: GrafanaLatencyWidget | null
+  requestRate: GrafanaRequestRateWidget | null
+  errorRate: GrafanaErrorRateWidget | null
+  topSlowest: GrafanaTopSlowestWidget | null
+  recentFailures: GrafanaRecentFailuresWidget | null
+  dependencyGraph: GrafanaDependencyGraphWidget | null
+  generatedAt: string
+}
+
+export type GrafanaWebSocketMessage = {
+  topic: string
+  data: GrafanaWidgetData
+}

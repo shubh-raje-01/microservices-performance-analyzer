@@ -49,4 +49,14 @@ public interface TraceSpanRepository extends JpaRepository<TraceSpan, Long> {
             ORDER BY t.startTime DESC
             """)
     List<TraceSpan> findRecentSpans(@Param("since") Instant since);
+
+    @Query(value = """
+            SELECT * FROM trace_spans
+            WHERE start_time >= :since
+            ORDER BY start_time DESC
+            LIMIT :maxResults
+            """, nativeQuery = true)
+    List<TraceSpan> findRecentSpansBounded(
+            @Param("since") Instant since,
+            @Param("maxResults") int maxResults);
 }

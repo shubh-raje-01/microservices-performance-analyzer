@@ -8,11 +8,15 @@ import com.analyzer.modules.simulation.controller.SimulationController;
 import com.analyzer.modules.metrics.controller.MetricsController;
 import com.analyzer.modules.logging.controller.LoggingController;
 import com.analyzer.modules.ai.controller.AIController;
+import com.analyzer.modules.ai.controller.RcaController;
 import com.analyzer.modules.recommendation.controller.RecommendationController;
 import com.analyzer.modules.dashboard.controller.DashboardController;
+import com.analyzer.modules.grafana.controller.GrafanaController;
+import com.analyzer.modules.grafana.dto.GrafanaWidgetData;
 import com.analyzer.service_registry.controller.ServiceRegistryController;
 import com.analyzer.service_registry.controller.HealthMonitorController;
 import com.analyzer.service_registry.controller.BenchmarkController;
+import com.analyzer.service_registry.controller.ServiceMetricsController;
 import com.analyzer.service_registry.dto.BenchmarkRequestDto;
 import com.analyzer.service_registry.dto.ServiceRequestDto;
 import com.analyzer.modules.tracing.controller.TraceController;
@@ -44,6 +48,9 @@ public class GlobalController {
     private final HealthMonitorController healthMonitorController;
     private final BenchmarkController benchmarkController;
     private final TraceController traceController;
+    private final ServiceMetricsController serviceMetricsController;
+    private final RcaController rcaController;
+    private final GrafanaController grafanaController;
 
     //  SIMULATION
 
@@ -331,6 +338,45 @@ public class GlobalController {
     }
 
     // ════════════════════════════════════════════════════════════════════
+    //  SERVICE METRICS (Prometheus)
+    // ════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/metrics/service/{id}")
+    public ResponseEntity<ApiResponse<?>> getAllServiceMetrics(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "24") int hours) {
+        return serviceMetricsController.getAllMetrics(id, hours);
+    }
+
+    @GetMapping("/metrics/service/{id}/cpu")
+    public ResponseEntity<ApiResponse<?>> getServiceCpuMetrics(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "24") int hours) {
+        return serviceMetricsController.getCpuMetrics(id, hours);
+    }
+
+    @GetMapping("/metrics/service/{id}/memory")
+    public ResponseEntity<ApiResponse<?>> getServiceMemoryMetrics(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "24") int hours) {
+        return serviceMetricsController.getMemoryMetrics(id, hours);
+    }
+
+    @GetMapping("/metrics/service/{id}/latency")
+    public ResponseEntity<ApiResponse<?>> getServiceLatencyMetrics(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "24") int hours) {
+        return serviceMetricsController.getLatencyMetrics(id, hours);
+    }
+
+    @GetMapping("/metrics/service/{id}/requests")
+    public ResponseEntity<ApiResponse<?>> getServiceRequestMetrics(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "24") int hours) {
+        return serviceMetricsController.getRequestMetrics(id, hours);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
     //  DISTRIBUTED TRACING
     // ════════════════════════════════════════════════════════════════════
 
@@ -352,6 +398,51 @@ public class GlobalController {
     public ResponseEntity<ApiResponse<TraceDependencyGraphDto>> getTraceGraph(
             @PathVariable String traceId) {
         return traceController.getDependencyGraph(traceId);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  ROOT CAUSE ANALYSIS
+    // ════════════════════════════════════════════════════════════════════
+
+    @PostMapping("/rca/{serviceId}")
+    public ResponseEntity<ApiResponse<?>> analyzeRootCause(
+            @PathVariable String serviceId,
+            @RequestParam(required = false) String serviceName,
+            @RequestParam(defaultValue = "24") int hours) {
+        log.info("POST /rca/{} — hours: {}", serviceId, hours);
+        return rcaController.analyzeRootCause(serviceId, serviceName, hours);
+    }
+
+    @GetMapping("/rca/{serviceId}/history")
+    public ResponseEntity<ApiResponse<?>> getRcaHistory(
+            @PathVariable String serviceId,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return rcaController.getHistory(serviceId, page, size);
+    }
+
+    @GetMapping("/rca/{serviceId}/recent")
+    public ResponseEntity<ApiResponse<?>> getRecentRca(
+            @PathVariable String serviceId,
+            @RequestParam(defaultValue = "24") int hours) {
+        return rcaController.getRecent(serviceId, hours);
+    }
+
+    @GetMapping("/rca/{serviceId}/stats")
+    public ResponseEntity<ApiResponse<?>> getRcaStats(
+            @PathVariable String serviceId,
+            @RequestParam(defaultValue = "24") int hours) {
+        return rcaController.getStats(serviceId, hours);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  GRAFANA MONITORING
+    // ════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/grafana/widgets")
+    public ResponseEntity<GrafanaWidgetData> getGrafanaWidgets(
+            @RequestParam(defaultValue = "24") int hours) {
+        return grafanaController.getWidgets(hours);
     }
 
     // ════════════════════════════════════════════════════════════════════
