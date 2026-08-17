@@ -59,7 +59,7 @@ export function RequestRateWidget({ data }: Props) {
               <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 10 }} width={35} />
               <Tooltip
-                formatter={(value: number) => [`${value} req/s`, 'Rate']}
+                formatter={(value) => [`${Number(value ?? 0)} req/s`, 'Rate']}
                 labelFormatter={(label) => `Time: ${label}`}
               />
               <Area

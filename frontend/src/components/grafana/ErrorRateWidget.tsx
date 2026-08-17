@@ -62,7 +62,7 @@ export function ErrorRateWidget({ data }: Props) {
               <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 10 }} width={25} />
               <Tooltip
-                formatter={(value: number) => [value ? 'Error' : 'OK', 'Status']}
+                formatter={(value) => [Number(value ?? 0) ? 'Error' : 'OK', 'Status']}
                 labelFormatter={(label) => `Time: ${label}`}
               />
               <Bar dataKey="errors" radius={[2, 2, 0, 0]}>

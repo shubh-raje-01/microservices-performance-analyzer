@@ -99,5 +99,12 @@ export function usePollingSimulation(id: number | null) {
       toast.info(`Simulation "${sim.scenarioName}" cancelled`)
       queryClient.invalidateQueries({ queryKey: ['simulations'] })
     }
-  }, [data?.data?.status])
+  }, [
+    data?.data,
+    pollingSimulationId,
+    queryClient,
+    removeRunningSimulation,
+    setPollingSimulationId,
+    upsertRunningSimulation,
+  ])
 }

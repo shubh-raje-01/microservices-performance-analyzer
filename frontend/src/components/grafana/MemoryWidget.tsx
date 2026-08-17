@@ -55,7 +55,7 @@ export function MemoryWidget({ data }: Props) {
               <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={35} />
               <Tooltip
-                formatter={(value: number) => [`${value}%`, 'Memory']}
+                formatter={(value) => [`${Number(value ?? 0)}%`, 'Memory']}
                 labelFormatter={(label) => `Time: ${label}`}
               />
               <Area

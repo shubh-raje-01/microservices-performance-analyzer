@@ -47,7 +47,7 @@ export function CpuWidget({ data }: Props) {
               <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={35} />
               <Tooltip
-                formatter={(value: number) => [`${value}%`, 'CPU']}
+                formatter={(value) => [`${Number(value ?? 0)}%`, 'CPU']}
                 labelFormatter={(label) => `Time: ${label}`}
               />
               <Area

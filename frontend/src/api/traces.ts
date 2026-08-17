@@ -1,5 +1,11 @@
 import client from './client'
-import type { TraceSummaryDto, TraceDetailDto, TraceDependencyGraphDto } from '../types'
+import type {
+  ApiResponse,
+  PagedResponse,
+  TraceSummaryDto,
+  TraceDetailDto,
+  TraceDependencyGraphDto,
+} from '../types'
 
 export const getTraces = (params: {
   page?: number
@@ -7,10 +13,14 @@ export const getTraces = (params: {
   serviceName?: string
   hoursBack?: number
 }) =>
-  client.get<{ content: TraceSummaryDto[]; totalElements: number; totalPages: number }>('/traces', { params })
+  client.get<ApiResponse<PagedResponse<TraceSummaryDto>>>('/traces', {
+    params,
+  })
 
 export const getTraceById = (traceId: string) =>
-  client.get<TraceDetailDto>(`/traces/${traceId}`)
+  client.get<ApiResponse<TraceDetailDto>>(`/traces/${traceId}`)
 
 export const getTraceGraph = (traceId: string) =>
-  client.get<TraceDependencyGraphDto>(`/traces/${traceId}/graph`)
+  client.get<ApiResponse<TraceDependencyGraphDto>>(
+    `/traces/${traceId}/graph`,
+  )

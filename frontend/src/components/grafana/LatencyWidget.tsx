@@ -53,7 +53,7 @@ export function LatencyWidget({ data }: Props) {
               <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 10 }} width={40} />
               <Tooltip
-                formatter={(value: number) => [formatLatency(value), 'Latency']}
+                formatter={(value) => [formatLatency(Number(value ?? 0)), 'Latency']}
                 labelFormatter={(label) => `Time: ${label}`}
               />
               <Line

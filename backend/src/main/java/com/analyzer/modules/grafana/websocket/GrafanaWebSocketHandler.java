@@ -60,7 +60,7 @@ public class GrafanaWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
-        log.warn("WebSocket transport error for session {}: {}", session.getId(), exception.getMessage());
+        log.warn("WebSocket transport error for session {}: {}", session.getId(), exception);
         sessions.remove(session);
     }
 

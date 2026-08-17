@@ -19,16 +19,21 @@ public interface TraceSpanRepository extends JpaRepository<TraceSpan, Long> {
     Page<TraceSpan> findByServiceNameAndStartTimeAfter(String serviceName, Instant since, Pageable pageable);
 
     @Query("""
-            SELECT DISTINCT t.traceId FROM TraceSpan t
-            WHERE t.startTime >= :since
-            ORDER BY t.startTime DESC
-            """)
+        SELECT t.traceId
+        FROM TraceSpan t
+        WHERE t.startTime >= :since
+        GROUP BY t.traceId
+        ORDER BY MAX(t.startTime) DESC
+        """)
     Page<String> findDistinctTraceIds(@Param("since") Instant since, Pageable pageable);
 
     @Query("""
-            SELECT DISTINCT t.traceId FROM TraceSpan t
-            WHERE t.serviceName = :serviceName AND t.startTime >= :since
-            ORDER BY t.startTime DESC
+            SELECT t.traceId
+            FROM TraceSpan t
+            WHERE t.serviceName = :serviceName
+            AND t.startTime >= :since
+            GROUP BY t.traceId
+            ORDER BY MAX(t.startTime) DESC
             """)
     Page<String> findDistinctTraceIdsByService(
             @Param("serviceName") String serviceName,

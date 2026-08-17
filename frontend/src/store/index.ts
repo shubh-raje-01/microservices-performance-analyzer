@@ -41,8 +41,10 @@ export const useAnalyzerStore = create<AnalyzerState>((set) => ({
 
   removeRunningSimulation: (id) =>
     set((state) => {
-      const { [id]: _, ...rest } = state.runningSimulations
-      return { runningSimulations: rest }
+      const runningSimulations = { ...state.runningSimulations }
+      delete runningSimulations[id]
+
+      return { runningSimulations }
     }),
 
   setDashboardSummary: (summary) => set({ dashboardSummary: summary }),

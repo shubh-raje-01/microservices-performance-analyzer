@@ -439,11 +439,11 @@ public class GlobalController {
     //  GRAFANA MONITORING
     // ════════════════════════════════════════════════════════════════════
 
-    @GetMapping("/grafana/widgets")
-    public ResponseEntity<GrafanaWidgetData> getGrafanaWidgets(
-            @RequestParam(defaultValue = "24") int hours) {
-        return grafanaController.getWidgets(hours);
-    }
+    // @GetMapping("/grafana/widgets")
+    // public ResponseEntity<GrafanaWidgetData> getGrafanaWidgets(
+    //         @RequestParam(defaultValue = "24") int hours) {
+    //     return grafanaController.getWidgets(hours);
+    // }
 
     // ════════════════════════════════════════════════════════════════════
     //  HEALTH
