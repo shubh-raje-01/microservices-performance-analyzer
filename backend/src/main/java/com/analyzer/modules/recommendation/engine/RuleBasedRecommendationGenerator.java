@@ -47,33 +47,33 @@ public class RuleBasedRecommendationGenerator {
         if (p95 >= MetricsConstants.LATENCY_CRITICAL_MS) {
 
             recs.add(build(sim,
-                    RecommendationCategory.LATENCY,
-                    RecommendationPriority.HIGH,
-                    "Enable distributed caching for hot data paths",
-                    String.format(
-                            "p95 latency of %.0fms exceeds the %.0fms critical ceiling. " +
-                                    "Distributed caching for frequently read data reduces database " +
-                                    "round-trips, which typically account for 40–60%% of service latency " +
-                                    "under concurrent load.",
-                            p95, MetricsConstants.LATENCY_CRITICAL_MS),
-                    "Add @Cacheable to high-read methods and configure a Redis TTL that matches " +
-                            "your data staleness tolerance. Start with 60 seconds for reference data " +
-                            "and 10 seconds for user-facing queries. Monitor cache hit rate via " +
-                            "/actuator/metrics/cache.gets.",
-                    0.85, 0.45));
+                RecommendationCategory.LATENCY,
+                RecommendationPriority.HIGH,
+                "Investigate caching effectiveness for hot data paths",
+                String.format(
+                        "p95 latency of %.0fms exceeds the %.0fms critical ceiling. " +
+                                "Repeated reads from external data stores can amplify latency under concurrent load. " +
+                                "Investigate cache usage and effectiveness before changing the data-access path.",
+                        p95, MetricsConstants.LATENCY_CRITICAL_MS),
+                "Inspect cache hit rate, miss rate, eviction rate, and cache latency for high-read operations. " +
+                        "If cache utilization is low, identify suitable read-heavy paths for caching and choose " +
+                        "a TTL based on data freshness requirements. Validate changes with p95/p99 latency and " +
+                        "database load.",
+                0.80, 0.45));
 
             recs.add(build(sim,
-                    RecommendationCategory.CONFIGURATION,
-                    RecommendationPriority.HIGH,
-                    "Tune connection pool to eliminate blocking waits",
-                    "Critical p95 latency commonly indicates connection pool exhaustion. " +
-                            "When all connections are in use, threads block and queue — inflating " +
-                            "p95 and p99 far beyond the actual query execution time.",
-                    "Set HikariCP maximumPoolSize = (number_of_cores × 2) + 1. " +
-                            "For a 4-core host: maximumPoolSize=9. Set connectionTimeout=3000 " +
-                            "(3 seconds) so blocked threads fail fast rather than cascading. " +
-                            "Monitor pool contention at /actuator/metrics/hikaricp.connections.pending.",
-                    0.80, 0.40));
+                RecommendationCategory.CONFIGURATION,
+                RecommendationPriority.HIGH,
+                "Investigate connection-pool contention",
+                "Critical p95 latency can be amplified by connection-pool contention when requests " +
+                        "wait for an available database connection. Verify pool contention before " +
+                        "changing pool size.",
+                "Inspect active, idle, and pending database connections together with connection " +
+                        "acquisition time. If pending connections or acquisition latency are elevated, " +
+                        "tune pool size and connection timeout based on measured workload and database " +
+                        "capacity. Avoid increasing the pool without confirming that the database can " +
+                        "sustain the additional load.",
+                0.78, 0.40));
 
             recs.add(build(sim,
                     RecommendationCategory.SCALING,
@@ -106,17 +106,18 @@ public class RuleBasedRecommendationGenerator {
                             "generating excessive queries. Replace with JOIN FETCH or @BatchSize(size=50).",
                     0.72, 0.28));
 
-            recs.add(build(sim,
-                    RecommendationCategory.CONFIGURATION,
-                    RecommendationPriority.LOW,
-                    "Add response compression for large payloads",
-                    "Latency approaching the warning threshold is sometimes caused by large " +
-                            "uncompressed response bodies, particularly for list endpoints under " +
-                            "concurrent load. Compression reduces network transfer time by 60–80%%.",
-                    "Add server.compression.enabled=true, server.compression.min-response-size=1024 " +
-                            "to application.yml. Include application/json in mime-types. " +
-                            "Verify that downstream consumers accept gzip encoding.",
-                    0.55, 0.15));
+                recs.add(build(sim,
+                        RecommendationCategory.CONFIGURATION,
+                        RecommendationPriority.LOW,
+                        "Evaluate response compression for large payloads",
+                        "Latency approaching the warning threshold may be amplified by large response " +
+                                "payloads and network transfer time. Compression is worth evaluating when " +
+                                "payload size or transfer time is a significant part of end-to-end latency.",
+                        "Measure response payload sizes and network transfer time for affected endpoints. " +
+                                "If large payloads contribute materially to latency, verify that compression " +
+                                "is enabled and tuned appropriately, then compare p95 latency and response " +
+                                "size before and after the change.",
+                        0.55, 0.15));
         }
     }
 
@@ -134,19 +135,19 @@ public class RuleBasedRecommendationGenerator {
         if (rate >= MetricsConstants.ERROR_RATE_CRITICAL) {
 
             recs.add(build(sim,
-                    RecommendationCategory.ERROR_RATE,
-                    RecommendationPriority.HIGH,
-                    "Implement circuit breaker on all downstream calls",
-                    String.format(
-                            "Error rate of %.1f%% exceeds the %.0f%% critical threshold. " +
-                                    "Without a circuit breaker, downstream failures cascade and thread pools " +
-                                    "fill with blocked calls waiting on a failing dependency.",
-                            rate * 100, MetricsConstants.ERROR_RATE_CRITICAL * 100),
-                    "Annotate all outbound HTTP methods with @CircuitBreaker(name=\"service\", " +
-                            "fallbackMethod=\"fallback\"). Configure: failure-rate-threshold=50, " +
-                            "sliding-window-size=5, wait-duration-in-open-state=30s. " +
-                            "The fallback must return a cached or default response, not throw.",
-                    0.92, 0.55));
+                RecommendationCategory.ERROR_RATE,
+                RecommendationPriority.HIGH,
+                "Verify downstream failure isolation",
+                String.format(
+                        "Error rate of %.1f%% exceeds the %.0f%% critical threshold. " +
+                                "Unprotected downstream failures can cascade and exhaust shared " +
+                                "resources while calls wait on an unhealthy dependency.",
+                        rate * 100, MetricsConstants.ERROR_RATE_CRITICAL * 100),
+                "Verify that critical downstream calls are protected by circuit breakers or an " +
+                        "equivalent failure-isolation mechanism. Review failure-rate thresholds, " +
+                        "sliding-window configuration, open-state duration, and fallback behavior. " +
+                        "Ensure degraded responses fail safely rather than propagating dependency failures.",
+                0.88, 0.55));
 
             recs.add(build(sim,
                     RecommendationCategory.ARCHITECTURE,
@@ -269,17 +270,17 @@ public class RuleBasedRecommendationGenerator {
         if ("DEGRADED".equals(ctx.getHealthStatus())
                 || "CRITICAL".equals(ctx.getHealthStatus())) {
             recs.add(build(sim,
-                    RecommendationCategory.CONFIGURATION,
-                    RecommendationPriority.LOW,
-                    "Add distributed tracing to identify hotspots",
-                    "Degraded health with multiple contributing factors is difficult to diagnose " +
-                            "without per-request trace data showing which operation contributes most " +
-                            "to latency.",
-                    "Add micrometer-tracing-bridge-otel and configure an OTLP exporter pointing " +
-                            "to a local Jaeger instance (docker run -p 16686:16686 jaegertracing/all-in-one). " +
-                            "Set management.tracing.sampling.probability=1.0 during investigation, " +
-                            "then lower to 0.1 in production.",
-                    0.60, 0.20));
+                RecommendationCategory.CONFIGURATION,
+                RecommendationPriority.LOW,
+                "Use distributed tracing to identify latency hotspots",
+                "Degraded health with multiple contributing factors is difficult to diagnose " +
+                        "from aggregate metrics alone. Per-request trace data can identify which " +
+                        "service or operation contributes most to latency.",
+                "Inspect distributed traces for the affected time window and compare span duration " +
+                        "across services. Focus on slow spans, downstream calls, retries, and database " +
+                        "operations. If trace coverage is incomplete, increase sampling for the " +
+                        "investigation and verify trace propagation across service boundaries.",
+                0.60, 0.20));
         }
     }
 
