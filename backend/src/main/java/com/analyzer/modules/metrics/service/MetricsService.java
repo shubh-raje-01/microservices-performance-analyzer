@@ -81,7 +81,7 @@ public class MetricsService {
                 .orElse(0.0);
         Double avgP99 = metricsRepository.avgP99BySimulation(simulationId)
                 .orElse(0.0);
-        Double maxP99 = metricsRepository.maxP99BySimulation(simulationId)
+        Double maxLatency = metricsRepository.maxLatencyBySimulation(simulationId)
                 .orElse(0.0);
 
         Double avgLatency = metricsRepository
@@ -106,7 +106,7 @@ public class MetricsService {
                 .avgLatencyMs(MetricsCalculator.round(avgLatency,   2))
                 .p95LatencyMs(MetricsCalculator.round(avgP95,       2))
                 .p99LatencyMs(MetricsCalculator.round(avgP99,       2))
-                .maxLatencyMs(MetricsCalculator.round(maxP99 * 1.1, 2))
+                .maxLatencyMs(MetricsCalculator.round(maxLatency, 2))
                 .throughputRps(MetricsCalculator.round(avgThroughput, 2))
                 .totalRequests(totalReqs)
                 .failedRequests(failedReqs)

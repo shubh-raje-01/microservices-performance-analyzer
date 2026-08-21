@@ -88,11 +88,12 @@ public interface MetricsRepository extends JpaRepository<MetricSnapshot, Long> {
     Optional<Double> avgP99BySimulation(@Param("simId") Long simulationId);
 
     @Query("""
-        SELECT MAX(m.p99Ms) FROM MetricSnapshot m
+        SELECT MAX(m.maxMs) FROM MetricSnapshot m
         WHERE m.simulationId = :simId
           AND m.metricType   = 'LATENCY'
+          AND m.maxMs IS NOT NULL
     """)
-    Optional<Double> maxP99BySimulation(@Param("simId") Long simulationId);
+    Optional<Double> maxLatencyBySimulation(@Param("simId") Long simulationId);
 
     // ── Cross-simulation queries =>
 

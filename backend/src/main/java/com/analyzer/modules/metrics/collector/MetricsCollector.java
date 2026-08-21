@@ -118,7 +118,7 @@ public class MetricsCollector {
                 .avgMs(result.getAvgLatencyMs())
                 .p95Ms(p95)
                 .p99Ms(result.getP99LatencyMs())
-                .maxMs(result.getP99LatencyMs() * 1.1) // estimate max from p99
+                .maxMs(result.getMaxLatencyMs())
                 .severity(sv)
                 .notes(notes)
                 .recordedAt(recordedAt)

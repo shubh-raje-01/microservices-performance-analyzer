@@ -28,6 +28,10 @@ public class SimulationRunner {
         double avgLatency = latencies.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
         double p95Latency = percentile(latencies, 95);
         double p99Latency = percentile(latencies, 99);
+        double maxLatency = latencies.stream()
+                .mapToDouble(Double::doubleValue)
+                .max()
+                .orElse(0.0);
         double throughput = (double) totalRequests / sim.getDurationSeconds();
 
         long failedRequests = Math.round(totalRequests * injectErrorRate(sim));
@@ -35,12 +39,13 @@ public class SimulationRunner {
 
         log.info("SimulationRunner complete — avg={:.1f}ms p95={:.1f}ms p99={:.1f}ms " +
                 "rps={:.1f} errorRate={:.4f}",
-                avgLatency, p95Latency, p99Latency, throughput, actualError);
+                avgLatency, p95Latency, p99Latency, maxLatency, throughput, actualError);
 
         return SimulationResult.builder()
                 .avgLatencyMs(round(avgLatency))
                 .p95LatencyMs(round(p95Latency))
                 .p99LatencyMs(round(p99Latency))
+                .maxLatencyMs(round(maxLatency))
                 .throughputRps(round(throughput))
                 .actualErrorRate(round(actualError))
                 .totalRequests(totalRequests)
