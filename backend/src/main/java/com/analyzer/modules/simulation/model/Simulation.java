@@ -50,6 +50,9 @@ public class Simulation {
     @Column(name = "p99_latency_ms")
     private Double p99LatencyMs;
 
+    @Column(name = "max_latency_ms")
+    private Double maxLatencyMs;
+
     @Column(name = "throughput_rps")
     private Double throughputRps;
 
@@ -96,6 +99,7 @@ public class Simulation {
         this.avgLatencyMs = result.getAvgLatencyMs();
         this.p95LatencyMs = result.getP95LatencyMs();
         this.p99LatencyMs = result.getP99LatencyMs();
+        this.maxLatencyMs = result.getMaxLatencyMs();
         this.throughputRps = result.getThroughputRps();
         this.actualErrorRate = result.getActualErrorRate();
         this.totalRequests = result.getTotalRequests();
