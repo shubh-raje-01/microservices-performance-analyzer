@@ -11,7 +11,11 @@ public class SimulationResult {
     private final double p95LatencyMs;
     private final double p99LatencyMs;
     private final double maxLatencyMs;
+
     private final double throughputRps;
+    private final double peakThroughputRps;
+    private final double throughputVariability;
+
     private final double actualErrorRate;
     private final long totalRequests;
     private final long failedRequests;

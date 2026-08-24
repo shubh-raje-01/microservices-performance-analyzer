@@ -190,7 +190,12 @@ public class MetricsService {
                 .maxLatencyMs(MetricsCalculator.round(MetricsCalculator.max(latencyValues),  2))
                 .stdDevLatencyMs(MetricsCalculator.round(MetricsCalculator.stdDev(latencyValues), 2))
                 .avgThroughputRps(MetricsCalculator.round(avgThroughput, 2))
-                .peakThroughputRps(MetricsCalculator.round(MetricsCalculator.max(throughputValues), 2))
+                .peakThroughputRps(
+                        MetricsCalculator.round(
+                                sim.getPeakThroughputRps() != null
+                                        ? sim.getPeakThroughputRps()
+                                        : 0.0,
+                                2))
                 .avgErrorRate(MetricsCalculator.round(avgErrorRate,                        6))
                 .maxErrorRate(MetricsCalculator.round(MetricsCalculator.max(errorRateValues), 6))
                 .totalRequests(totalRequests)
@@ -203,6 +208,12 @@ public class MetricsService {
                 .windowEnd(all.get(all.size() - 1).getRecordedAt())
                 .snapshotCountByType(countByType)
                 .criticalSnapshots(criticals)
+                .throughputVariability(
+                        MetricsCalculator.round(
+                                sim.getThroughputVariability() != null
+                                        ? sim.getThroughputVariability()
+                                        : 0.0,
+                                4))
                 .build();
     }
 

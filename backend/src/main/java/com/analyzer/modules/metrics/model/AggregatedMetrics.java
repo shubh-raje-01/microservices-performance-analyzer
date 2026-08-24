@@ -44,4 +44,6 @@ public class AggregatedMetrics {
     // Per-type breakdown — keyed by MetricType name
     private final Map<String, Long> snapshotCountByType;
     private final List<MetricSnapshot> criticalSnapshots;
+
+    private final Double throughputVariability;
 }

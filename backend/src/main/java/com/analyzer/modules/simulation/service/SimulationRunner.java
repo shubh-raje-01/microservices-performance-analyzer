@@ -20,43 +20,62 @@ public class SimulationRunner {
         log.info("SimulationRunner starting — scenario={} service={} users={} duration={}s",
                 sim.getScenarioName(), sim.getTargetService(), sim.getConcurrentUsers(), sim.getDurationSeconds());
 
-        int totalRequests = estimateTotalRequests(sim);
+        List<Double> throughputWindows = generateThroughputWindows(sim);
+
+        double avgThroughput = throughputWindows.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
+
+        double peakThroughput = throughputWindows.stream()
+                .mapToDouble(Double::doubleValue)
+                .max()
+                .orElse(0.0);
+
+        double throughputVariability = avgThroughput > 0
+                ? (peakThroughput - avgThroughput) / avgThroughput
+                : 0.0;
+
+        int totalRequests = (int) Math.round(
+                avgThroughput * sim.getDurationSeconds()
+        );
+
         List<Double> latencies = generateLatencies(totalRequests, sim);
 
         Collections.sort(latencies);
 
-        double avgLatency = latencies.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        double avgLatency = latencies.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
+
         double p95Latency = percentile(latencies, 95);
         double p99Latency = percentile(latencies, 99);
+
         double maxLatency = latencies.stream()
                 .mapToDouble(Double::doubleValue)
                 .max()
                 .orElse(0.0);
-        double throughput = (double) totalRequests / sim.getDurationSeconds();
 
         long failedRequests = Math.round(totalRequests * injectErrorRate(sim));
         double actualError = (double) failedRequests / totalRequests;
 
         log.info("SimulationRunner complete — avg={:.1f}ms p95={:.1f}ms p99={:.1f}ms " +
                 "rps={:.1f} errorRate={:.4f}",
-                avgLatency, p95Latency, p99Latency, maxLatency, throughput, actualError);
+                avgLatency, p95Latency, p99Latency, maxLatency, failedRequests, actualError);
 
         return SimulationResult.builder()
                 .avgLatencyMs(round(avgLatency))
                 .p95LatencyMs(round(p95Latency))
                 .p99LatencyMs(round(p99Latency))
                 .maxLatencyMs(round(maxLatency))
-                .throughputRps(round(throughput))
+                .throughputRps(round(avgThroughput))
+                .peakThroughputRps(round(peakThroughput))
+                .throughputVariability(round(throughputVariability))
                 .actualErrorRate(round(actualError))
                 .totalRequests(totalRequests)
                 .failedRequests(failedRequests)
                 .build();
-    }
-
-    private int estimateTotalRequests(Simulation sim) {
-        // Approximate requests based on concurrency and typical response time
-        int baseRps = Math.max(1, sim.getConcurrentUsers() / 5);
-        return baseRps * sim.getDurationSeconds();
     }
 
     private List<Double> generateLatencies(int count, Simulation sim) {
@@ -103,6 +122,31 @@ public class SimulationRunner {
 
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    private List<Double> generateThroughputWindows(Simulation sim) {
+        int duration = Math.max(1, sim.getDurationSeconds());
+
+        // Keep the number of windows bounded for longer simulations.
+        int windowCount = Math.max(1, Math.min(12, (int) Math.ceil(duration / 5.0)));
+
+        double baseRps = Math.max(1.0, sim.getConcurrentUsers() / 5.0);
+
+        List<Double> windows = new ArrayList<>(windowCount);
+
+        for (int i = 0; i < windowCount; i++) {
+            double loadFactor = 0.90 + RNG.nextDouble() * 0.20;
+
+            // Small periodic pressure variation prevents a perfectly flat profile.
+            double phase = (double) i / Math.max(1, windowCount - 1);
+            double pressureFactor = 1.0 + Math.sin(phase * Math.PI) * 0.08;
+
+            double rps = baseRps * loadFactor * pressureFactor;
+
+            windows.add(Math.max(1.0, rps));
+        }
+
+        return windows;
     }
 
 }

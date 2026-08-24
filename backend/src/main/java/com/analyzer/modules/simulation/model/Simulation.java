@@ -56,6 +56,12 @@ public class Simulation {
     @Column(name = "throughput_rps")
     private Double throughputRps;
 
+    @Column(name = "peak_throughput_rps")
+    private Double peakThroughputRps;
+
+    @Column(name = "throughput_variability")
+    private Double throughputVariability;
+
     @Column(name = "actual_error_rate")
     private Double actualErrorRate;
     private Long totalRequests;
@@ -93,6 +99,11 @@ public class Simulation {
         this.startedAt = Instant.now();
     }
 
+    /**
+     * Stores the average simulated throughput for the completed run.
+     * Peak throughput and variability are carried by SimulationResult
+     * for downstream metric/AI analysis and are not persisted here.
+     */
     public void markCompleted(SimulationResult result) {
         this.status = SimulationStatus.COMPLETED;
         this.completedAt = Instant.now();
@@ -101,6 +112,8 @@ public class Simulation {
         this.p99LatencyMs = result.getP99LatencyMs();
         this.maxLatencyMs = result.getMaxLatencyMs();
         this.throughputRps = result.getThroughputRps();
+        this.peakThroughputRps = result.getPeakThroughputRps();
+        this.throughputVariability = result.getThroughputVariability();
         this.actualErrorRate = result.getActualErrorRate();
         this.totalRequests = result.getTotalRequests();
         this.failedRequests = result.getFailedRequests();

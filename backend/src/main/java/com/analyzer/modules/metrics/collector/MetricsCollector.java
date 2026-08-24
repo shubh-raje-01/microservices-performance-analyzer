@@ -25,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MetricsCollector {
 
-    private final MetricsRepository        repository;
+    private final MetricsRepository repository;
     private final MetricsSeverityEvaluator severityEvaluator;
 
     /**
@@ -142,8 +142,10 @@ public class MetricsCollector {
                 .unit("rps")
                 .totalRequests(result.getTotalRequests())
                 .severity(sv)
-                .notes(String.format("%.1f req/s over %ds",
-                        rps, sim.getDurationSeconds()))
+                .notes(String.format(
+                        "Average simulated throughput: %.1f req/s over %ds",
+                        rps,
+                        sim.getDurationSeconds()))
                 .recordedAt(recordedAt)
                 .build();
     }
